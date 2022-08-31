@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using SistemaClientes.Api.Models;
+using SistemaClientes.Api.Resources;
 using SistemaClientes.Data.Entities;
 using SistemaClientes.Data.Repositories;
 using SistemaClientes.Models;
@@ -30,9 +31,9 @@ namespace SistemaClientes.Controllers
             }
             catch (Exception e)
             {
-                return StatusCode(500, new { mensagem =$"Falha: {e.Message}"});
+                return StatusCode(500, new { mensagem = $"Falha: {e.Message}" });
             }
-            
+
         }
 
         [HttpPut]
@@ -59,7 +60,7 @@ namespace SistemaClientes.Controllers
                 {
                     return StatusCode(400, new { mensagem = $"Cliente {cliente.Nome}, não encontrado, por favor verifique o ID." });
                 }
-                
+
             }
             catch (Exception e)
             {
@@ -97,26 +98,28 @@ namespace SistemaClientes.Controllers
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(List<ClientesGetModel>))]
         public IActionResult GetAll()
         {
-            try 
-            { 
+            try
+            {
                 var lista = new List<ClientesGetModel>();
 
                 var clienteRepository = new ClienteRepository();
                 foreach (var item in clienteRepository.Consultar())
                 {
-                var model = new ClientesGetModel();
+                    var calcularIdade = new CalcularIdade();
+                    var model = new ClientesGetModel();
 
-                model.IdCliente = item.IdCliente;
-                model.Nome = item.Nome;
-                model.Telefone = item.Telefone;
-                model.Email = item.Email;
-                model.Cpf = item.Cpf;
-                model.DataNascimento = item.DataNascimento;
+                    model.IdCliente = item.IdCliente;
+                    model.Nome = item.Nome;
+                    model.Telefone = item.Telefone;
+                    model.Email = item.Email;
+                    model.Cpf = item.Cpf;
+                    model.DataNascimento = item.DataNascimento;
+                    model.Idade = calcularIdade.ObterIdade(item.DataNascimento);
 
-                lista.Add(model);
+                    lista.Add(model);
                 }
-            
-                    return StatusCode(200, lista);
+
+                return StatusCode(200, lista);
             }
             catch (Exception e)
             {
@@ -133,8 +136,9 @@ namespace SistemaClientes.Controllers
                 var clienteRepository = new ClienteRepository();
                 var cliente = clienteRepository.ObterPorId(idcliente);
 
-                if(cliente != null)
+                if (cliente != null)
                 {
+                    var calcularIdade = new CalcularIdade();
                     var model = new ClientesGetModel();
 
                     model.IdCliente = cliente.IdCliente;
@@ -143,6 +147,7 @@ namespace SistemaClientes.Controllers
                     model.Cpf = cliente.Cpf;
                     model.Email = cliente.Email;
                     model.DataNascimento = cliente.DataNascimento;
+                    model.Idade = calcularIdade.ObterIdade(cliente.DataNascimento);
 
                     return StatusCode(200, model);
                 }
